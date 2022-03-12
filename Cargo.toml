@@ -1,0 +1,11 @@
+[package]
+name = "run-command-on-aws-lambda"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.56"
+lambda_runtime = "0.5.0"
+serde = "1.0.136"
+serde_json = "1.0.79"
+tokio = "1.17.0"
