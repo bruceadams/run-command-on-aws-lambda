@@ -46,10 +46,10 @@ fn poll_for_exit_condition(
         .map(|port| SocketAddr::from(([127, 0, 0, 1], *port)))
         .collect();
 
-    let one_second = Duration::from_secs(1);
+    let tenth_of_a_second = Duration::from_millis(100);
 
     loop {
-        sleep(one_second);
+        sleep(tenth_of_a_second);
 
         // If the child has exited, we're done.
         if let Some(status) = child.try_wait()? {
