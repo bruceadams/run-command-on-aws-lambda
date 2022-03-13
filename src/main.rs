@@ -176,20 +176,4 @@ mod tests {
         let result = run_program(&request);
         assert!(result.is_err());
     }
-
-    #[test]
-    fn exit_on_open_port() {
-        let request = Request {
-            program: "nc".to_string(),
-            arguments: vec![
-                "-l".to_string(),
-                "127.0.0.1".to_string(),
-                "8080".to_string(),
-            ],
-            environment: HashMap::new(),
-            ports: vec![8080],
-        };
-        let result = run_program(&request);
-        assert!(result.is_ok());
-    }
 }
