@@ -1,5 +1,6 @@
 # Run command on AWS Lambda
 
+[![Build Status](https://api.cirrus-ci.com/github/bruceadams/run-command-on-aws-lambda.svg)](https://cirrus-ci.com/github/bruceadams/run-command-on-aws-lambda)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.1%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 [![Apache License](https://img.shields.io/github/license/bruceadams/run-command-on-aws-lambda?logo=apache)](LICENSE)
 [![Github Release](https://img.shields.io/github/v/release/bruceadams/run-command-on-aws-lambda?logo=github)](https://github.com/bruceadams/run-command-on-aws-lambda/releases)
