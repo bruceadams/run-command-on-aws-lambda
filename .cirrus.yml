@@ -1,5 +1,5 @@
 env:
-  GITHUB_TOKEN:
+  GITHUB_TOKEN: ENCRYPTED[f4b46247a41052d44852639b8549b246840b3beffa5eb0d366791ab4f7e8786c70d95649f3b7cccfdeb8fb3b20fc25a4]
 
 linux_x68_64_task:
   container:
@@ -16,6 +16,8 @@ linux_x68_64_task:
       - rustc --version
   setup_script:
     - apk add --no-cache curl libc-dev
+  test_script:
+    - cargo test --verbose
   build_script:
     - cargo build --verbose --release
     - mv target/release/run-command-on-aws-lambda run-command-on-aws-lambda.$CIRRUS_OS.x86_64
@@ -40,6 +42,8 @@ linux_arm_task:
       - rustc --version
   setup_script:
     - apk add --no-cache curl libc-dev
+  test_script:
+    - cargo test --verbose
   build_script:
     - cargo build --verbose --release
     - mv target/release/run-command-on-aws-lambda run-command-on-aws-lambda.$CIRRUS_OS.aarch64

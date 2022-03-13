@@ -124,3 +124,72 @@ async fn main() -> Result<(), Error> {
     run(handler).await?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn simple_success() {
+        let request = Request {
+            program: "true".to_string(),
+            arguments: vec![],
+            environment: HashMap::new(),
+            ports: vec![],
+        };
+        let result = run_program(&request);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn simple_failure() {
+        let request = Request {
+            program: "false".to_string(),
+            arguments: vec![],
+            environment: HashMap::new(),
+            ports: vec![],
+        };
+        let result = run_program(&request);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn polled_success() {
+        let request = Request {
+            program: "true".to_string(),
+            arguments: vec![],
+            environment: HashMap::new(),
+            ports: vec![8080],
+        };
+        let result = run_program(&request);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn polled_failure() {
+        let request = Request {
+            program: "false".to_string(),
+            arguments: vec![],
+            environment: HashMap::new(),
+            ports: vec![8080],
+        };
+        let result = run_program(&request);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn exit_on_open_port() {
+        let request = Request {
+            program: "nc".to_string(),
+            arguments: vec![
+                "-l".to_string(),
+                "127.0.0.1".to_string(),
+                "8080".to_string(),
+            ],
+            environment: HashMap::new(),
+            ports: vec![8080],
+        };
+        let result = run_program(&request);
+        assert!(result.is_ok());
+    }
+}
