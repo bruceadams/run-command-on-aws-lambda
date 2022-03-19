@@ -128,6 +128,7 @@ async fn main() -> Result<(), Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env::consts::OS;
 
     #[test]
     fn simple_success() {
@@ -175,5 +176,26 @@ mod tests {
         };
         let result = run_program(&request);
         assert!(result.is_err());
+    }
+
+    /// This test is a _nice to have_, but won't run everywhere.
+    /// It uses `nc`, aka netcat, which has different, incompatible variants.
+    #[test]
+    fn exit_on_open_port() {
+        let arguments = if OS == "linux" {
+            // This is netcat-traditional, bundled in alpine, our CI platform.
+            vec!["-lp".to_string(), "8080".to_string()]
+        } else {
+            // This is netcat-openbsd, bundled on macOS
+            vec!["-l".to_string(), "8080".to_string()]
+        };
+        let request = Request {
+            program: "nc".to_string(),
+            arguments: arguments,
+            environment: HashMap::new(),
+            ports: vec![8080],
+        };
+        let result = run_program(&request);
+        assert!(result.is_ok());
     }
 }
