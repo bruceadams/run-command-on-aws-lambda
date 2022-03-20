@@ -11,7 +11,7 @@ use std::{
     time::Duration,
 };
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 struct Request {
     /// The executable to run
     program: String,
@@ -186,14 +186,14 @@ mod tests {
             // This is netcat-traditional, bundled in alpine, our CI platform.
             vec!["-lp".to_string(), "8080".to_string()]
         } else {
-            // This is netcat-openbsd, bundled on macOS
+            // This is netcat-openbsd, bundled on macOS, my main dev platform.
             vec!["-l".to_string(), "8080".to_string()]
         };
         let request = Request {
             program: "nc".to_string(),
-            arguments: arguments,
-            environment: HashMap::new(),
+            arguments,
             ports: vec![8080],
+            ..Default::default()
         };
         let result = run_program(&request);
         assert!(result.is_ok());
