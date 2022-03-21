@@ -14,6 +14,32 @@ This will work with many different Docker images, from plain Linux
 distributions, to AWS Command Line tools, to large standalone tools like
 [SchemaSpy](https://schemaspy.org/).
 
+## Overview
+
+Start by creating a Docker image with this tool added to a base Docker image
+containing whatever you want to see, see: [demo Dockerfile](demo/Dockerfile).
+
+Deploy that image onto AWS Lambda and invoke it. The invocation message
+includes what program to run, an optional list of command line arguments
+and an optional list of environment variables to set.
+
+```json
+{
+  "program": "mysql",
+  "arguments": [
+    "store",
+    "--password",
+    "fancy-password",
+    "--execute",
+    "SELECT * from purchase_orders"
+  ],
+  "environment": [
+    "MYSQL_HOST": "my-database.example.com",
+    "MYSQL_TCP_PORT": "3306",
+  ]
+}
+```
+
 ## Some example runs on an Alpine Linux base image
 
 ### Who is the runtime user? `id`
