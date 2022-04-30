@@ -135,7 +135,7 @@ adding `run-command-on-aws-lambda` as the entrypoint.
 ```dockerfile
 FROM partner/dotnet-service-with-migrations:1.0
 
-ARG WRAPPER=https://github.com/bruceadams/run-command-on-aws-lambda/releases/download/v0.1.0/run-command-on-aws-lambda.linux.x86_64
+ARG WRAPPER=https://github.com/bruceadams/run-command-on-aws-lambda/releases/download/v1.1.0/run-command-on-aws-lambda.linux.x86_64
 ADD ${WRAPPER} /usr/local/bin/run-command-on-aws-lambda
 RUN chmod +x /usr/local/bin/run-command-on-aws-lambda
 
