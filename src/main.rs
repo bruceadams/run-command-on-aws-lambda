@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use async_process::{Child, Command};
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -6,10 +7,9 @@ use std::{
     collections::HashMap,
     io::ErrorKind::InvalidInput,
     net::{SocketAddr, TcpStream},
-    process::{Child, Command},
-    thread::sleep,
     time::Duration,
 };
+use tokio::time::sleep;
 
 #[derive(Debug, Default, Deserialize)]
 struct Request {
@@ -36,7 +36,7 @@ struct Request {
     ports: Vec<u16>,
 }
 
-fn poll_for_exit_condition(
+async fn poll_for_exit_condition(
     mut child: Child,
     program: &str,
     ports: &[u16],
@@ -49,10 +49,10 @@ fn poll_for_exit_condition(
     let tenth_of_a_second = Duration::from_millis(100);
 
     loop {
-        sleep(tenth_of_a_second);
+        sleep(tenth_of_a_second).await;
 
         // If the child has exited, we're done.
-        if let Some(status) = child.try_wait()? {
+        if let Some(status) = child.try_status()? {
             if status.success() {
                 println!("Child {} exited successfully.", program);
                 return Ok(());
@@ -81,8 +81,8 @@ fn poll_for_exit_condition(
     }
 }
 
-fn wait_for_exit(mut child: Child, program: &str) -> Result<(), anyhow::Error> {
-    let status = child.wait()?;
+async fn wait_for_exit(mut child: Child, program: &str) -> Result<(), anyhow::Error> {
+    let status = child.status().await?;
     if status.success() {
         println!("Child {} exited successfully.", program);
         Ok(())
@@ -97,7 +97,7 @@ fn completion_value(program: &str) -> Result<Value, Error> {
     Ok(json!({ program: "success" }))
 }
 
-fn run_program(request: &Request) -> Result<Value, Error> {
+async fn run_program(request: &Request) -> Result<Value, Error> {
     println!("Running {} {:?}.", request.program, request.arguments);
     let child = Command::new(&request.program)
         .args(&request.arguments)
@@ -106,16 +106,16 @@ fn run_program(request: &Request) -> Result<Value, Error> {
 
     println!("Waiting for {} completion.", &request.program);
     if request.ports.is_empty() {
-        wait_for_exit(child, &request.program)?;
+        wait_for_exit(child, &request.program).await?;
     } else {
-        poll_for_exit_condition(child, &request.program, &request.ports)?;
+        poll_for_exit_condition(child, &request.program, &request.ports).await?;
     }
     completion_value(&request.program)
 }
 
 async fn proxy(event: LambdaEvent<Request>) -> Result<Value, Error> {
     let (request, _context) = event.into_parts();
-    run_program(&request)
+    run_program(&request).await
 }
 
 #[tokio::main]
@@ -129,59 +129,60 @@ async fn main() -> Result<(), Error> {
 mod tests {
     use super::*;
     use std::env::consts::OS;
+    use tokio;
 
-    #[test]
-    fn simple_success() {
+    #[tokio::test]
+    async fn simple_success() {
         let request = Request {
             program: "true".to_string(),
             arguments: vec![],
             environment: HashMap::new(),
             ports: vec![],
         };
-        let result = run_program(&request);
+        let result = run_program(&request).await;
         assert!(result.is_ok());
     }
 
-    #[test]
-    fn simple_failure() {
+    #[tokio::test]
+    async fn simple_failure() {
         let request = Request {
             program: "false".to_string(),
             arguments: vec![],
             environment: HashMap::new(),
             ports: vec![],
         };
-        let result = run_program(&request);
+        let result = run_program(&request).await;
         assert!(result.is_err());
     }
 
-    #[test]
-    fn polled_success() {
+    #[tokio::test]
+    async fn polled_success() {
         let request = Request {
             program: "true".to_string(),
             arguments: vec![],
             environment: HashMap::new(),
             ports: vec![8080],
         };
-        let result = run_program(&request);
+        let result = run_program(&request).await;
         assert!(result.is_ok());
     }
 
-    #[test]
-    fn polled_failure() {
+    #[tokio::test]
+    async fn polled_failure() {
         let request = Request {
             program: "false".to_string(),
             arguments: vec![],
             environment: HashMap::new(),
             ports: vec![8080],
         };
-        let result = run_program(&request);
+        let result = run_program(&request).await;
         assert!(result.is_err());
     }
 
     /// This test is a _nice to have_, but won't run everywhere.
     /// It uses `nc`, aka netcat, which has different, incompatible variants.
-    #[test]
-    fn exit_on_open_port() {
+    #[tokio::test]
+    async fn exit_on_open_port() {
         let arguments = if OS == "linux" {
             // This is netcat-traditional, bundled in alpine, our CI platform.
             vec!["-lp".to_string(), "8080".to_string()]
@@ -195,7 +196,7 @@ mod tests {
             ports: vec![8080],
             ..Default::default()
         };
-        let result = run_program(&request);
+        let result = run_program(&request).await;
         assert!(result.is_ok());
     }
 }

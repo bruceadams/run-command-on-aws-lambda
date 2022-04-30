@@ -1,6 +1,6 @@
 [package]
 name = "run-command-on-aws-lambda"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 categories = ["command-line-utilities"]
 description = "Run an arbitrary command line on AWS Lambda"
@@ -11,8 +11,9 @@ readme = "README.md"
 repository = "https://github.com/bruceadams/run-command-on-aws-lambda"
 
 [dependencies]
-anyhow = "1.0.56"
+anyhow = "1.0.57"
+async-process = "1.3.0"
 lambda_runtime = "0.5.1"
 serde = "1.0.136"
 serde_json = "1.0.79"
-tokio = "1.17.0"
+tokio = "1.18.0"
